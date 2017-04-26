@@ -44,14 +44,12 @@ public class AudioRecorder {
 
         try{
             audioRecord.startRecording();//开始录音
+            isRecording = true;
         }catch (IllegalStateException e){
             e.printStackTrace();
         }
 
-
-        Log.i(Thread.currentThread().getName(), "startRecord: Success!" + audioRecord.RECORDSTATE_RECORDING);
-        isRecording = true;
-        //new Thread(new AudioRecordThread()).start();
+        //新建线程将录音写到文件中
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -65,7 +63,7 @@ public class AudioRecorder {
      *将录音的音频存入文件中，以便后面进行播放
      */
     private void writeDataToFile(){
-        //newFile();
+        //录音使用16位的编码方式，对于read方法最好使用short存取buffersize中的数据
         short[] sAudioData = new short[bufferSize];
         byte[] bAudioData = new byte[bufferSize * 2];
         FileOutputStream fos = null;
@@ -83,14 +81,15 @@ public class AudioRecorder {
             int idx = 0;
             size = audioRecord.read(sAudioData,0,bufferSize);
             for (int i = 0; i < sAudioData.length; i++) {
+                //将short[]转成byte[]
                 bAudioData [idx++] = (byte) (sAudioData[i] & 0x00ff);
                 bAudioData [idx++] = (byte) ((sAudioData[i] & 0xff00) >>> 8);
             }
             if (AudioRecord.ERROR_INVALID_OPERATION != size){
                 try{
 
-                        fos.write(bAudioData);
-                    Log.i(Thread.currentThread().getName(), "writeDataToFile: Success!");
+                        fos.write(bAudioData);//write方法不能写short[]，所以写入byte[]
+                    //Log.i(Thread.currentThread().getName(), "writeDataToFile: Success!");
 
                 }catch (IOException e){
                     e.printStackTrace();
@@ -108,6 +107,7 @@ public class AudioRecorder {
      *存储pcm音频流文件名的格式
      */
     private String audioName(){
+        //定义文件名的格式
         String audioName = new SimpleDateFormat("yyyy-MM-dd hhmmss").format(new Date());
         return audioName = "Record" + audioName + ".pcm";
     }
