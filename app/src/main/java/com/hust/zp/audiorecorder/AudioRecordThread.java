@@ -5,9 +5,20 @@ package com.hust.zp.audiorecorder;
  */
 
 public class AudioRecordThread implements Runnable {
+
+    private AudioRecorder audioRecorder;
+    public AudioRecordThread(){
+        audioRecorder = new AudioRecorder();
+    }
+
     @Override
     public void run(){
-        //writeDataToFile();
+        if (AudioRecorder.isRecording == true){
+            audioRecorder.startRecord();
+        }
+        if (AudioRecorder.isRecording == false){
+            audioRecorder.stopRecord();
+        }
     }
 
 

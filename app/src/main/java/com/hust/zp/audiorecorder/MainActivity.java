@@ -2,18 +2,24 @@ package com.hust.zp.audiorecorder;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
+import static com.hust.zp.audiorecorder.AudioRecorder.isRecording;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
+    private static final String TAG = "Roc";
 
     private Button startRecord;
     private Button stopRecord;
     private Button playRecord;
     private ListView listView;
-    //MyAdatpter myAdapter;
+    MyAdapter myAdapter;
 
+    //private int sampleRateInHz;
     private AudioRecorder audioRecorder;
 
     @Override
@@ -28,101 +34,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playRecord = (Button)findViewById(R.id.playRecord);
         playRecord.setOnClickListener(this);
 
-        //myAdapter = new MyAdatpter();
+
         listView = (ListView)findViewById(R.id.listView);
-        //listView.setAdapter(myAdapter);
-        /*listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> arg0,View arg1,int arg2,long arg3){
-                File file = myAdapter.file[arg2];
-                startPlayRecord(file.getAbsolutePath());
-            }
-        });*/
-
-        audioRecorder = new AudioRecorder();
+        myAdapter = new MyAdapter(MainActivity.this,R.layout.item);
+        listView.setAdapter(myAdapter);
+        refreshViewByRecordingState();
 }
-/*
-    public class MyAdatpter extends BaseAdapter {
-        File[] file;
 
-        public MyAdatpter() {
-            super();
-            query();
+
+
+    protected void refreshViewByRecordingState() {
+        if (isRecording) {
+            isRecording = true;
+            Log.d(TAG, "refreshViewByRecordingState: "+ isRecording);
+        } else {
+            isRecording = false;
+            Log.d(TAG, "refreshViewByRecordingState: " + isRecording);
         }
 
-        public void query() {
-            String mFileName = Environment.getExternalStorageDirectory()
-                    .getAbsolutePath();
-            File f = new File(mFileName);
-            File [] found = f.listFiles(new FileFilter() {
-
-                @Override
-                public boolean accept(File pathname) {
-                    if (pathname.getName().startsWith("Record ")) {
-                        return true;
-                    }
-                    return false;
-                }
-            });
-
-            file = new File[found.length];
-            for (int i = 0; i < found.length; i++) {
-                file[i] = found[found.length-i-1];
-            }
-        }
-
-
-        @Override
-        public int getCount() {
-            // TODO Auto-generated method stub
-            return file == null ? 0 : file.length;
-        }
-
-        @Override
-        public Object getItem(int arg0) {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        public long getItemId(int arg0) {
-            // TODO Auto-generated method stub
-            return 0;
-        }
-
-        @Override
-        public View getView(int arg0, View arg1, ViewGroup arg2) {
-            View v = getLayoutInflater().inflate(R.layout.item, null);
-            TextView txtText = (TextView) v.findViewById(R.id.textView1);
-            TextView txtSize = (TextView) v.findViewById(R.id.textView2);
-
-            File f = file[arg0];
-            txtText.setText(f.getName());
-            txtSize.setText(f.length() / 1024 + " kb");
-
-            return v;
-        }
-
+        myAdapter.query();
+        myAdapter.notifyDataSetChanged();
     }
-*/
+
+
+
     @Override
     public void onClick(View v){
         switch(v.getId()){
             case R.id.startRecord://点击开始录音按钮
+
+                //AudioRecorder.isRecording = true;
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        Log.i(Thread.currentThread().getName(), "onClick: "+"开始录音");
+                        audioRecorder = new AudioRecorder();
                         audioRecorder.startRecord();
                     }
                 }).start();
                 break;
             case R.id.stopRecord://点击停止录音按钮
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        audioRecorder.stopRecord();
-                    }
-                }).start();
+
+                //AudioRecorder.isRecording = false;
+                Log.i(Thread.currentThread().getName(), "onClick: "+"停止录音");
+                audioRecorder.stopRecord();
+                refreshViewByRecordingState();
+
                 break;
             default:
                 break;

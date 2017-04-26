@@ -1,9 +1,12 @@
 package com.hust.zp.audiorecorder;
 
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,34 +20,45 @@ import java.util.Date;
 
 public class AudioRecorder {
 
-    public static final int RECORDER_SAMPLE_RATE = 48000;
-    public static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_OUT_MONO;
+    //public static final int RECORDER_SAMPLE_RATE = 44100;
+    //指定为单声道;选择PCM编码，一个抽样点16bit;
+    public static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     public static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    private int sampleRateInHz;
 
     public int bufferSize = 0;
-
-    private boolean isRecording;
+    public  static boolean isRecording;
     private AudioRecord audioRecord;
 
-
-    public AudioRecorder(){
-        initParam();
-    }
-
-    private void initParam(){
-        bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLE_RATE,RECORDER_CHANNELS,RECORDER_AUDIO_ENCODING);
-        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,RECORDER_SAMPLE_RATE,RECORDER_CHANNELS,RECORDER_AUDIO_ENCODING,bufferSize);
-
-    }
 
     /*
      *开始录音
      */
     public void startRecord(){
-        audioRecord.startRecording();//开始录音
+        //获得手机的抽样率：老一点的手机为44100hz，新一点的手机是48000hz
+        sampleRateInHz = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_MUSIC);
+        Log.i("Roc", "initParam: "+sampleRateInHz);
+        //根据抽样率，声道，编码位数得到最小的缓存区，然后对audioRecord实例化
+        bufferSize = AudioRecord.getMinBufferSize(sampleRateInHz,RECORDER_CHANNELS,RECORDER_AUDIO_ENCODING);
+        audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,sampleRateInHz,RECORDER_CHANNELS,RECORDER_AUDIO_ENCODING,bufferSize);
+
+        try{
+            audioRecord.startRecording();//开始录音
+        }catch (IllegalStateException e){
+            e.printStackTrace();
+        }
+
+
+        Log.i(Thread.currentThread().getName(), "startRecord: Success!" + audioRecord.RECORDSTATE_RECORDING);
         isRecording = true;
         //new Thread(new AudioRecordThread()).start();
-        writeDataToFile();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                writeDataToFile();
+            }
+        }).start();
+
     }
 
     /*
@@ -76,6 +90,7 @@ public class AudioRecorder {
                 try{
 
                         fos.write(bAudioData);
+                    Log.i(Thread.currentThread().getName(), "writeDataToFile: Success!");
 
                 }catch (IOException e){
                     e.printStackTrace();
@@ -106,6 +121,7 @@ public class AudioRecorder {
             audioRecord.release();
             audioRecord = null;
             isRecording = false;
+            Log.d(Thread.currentThread().getName(), "stopRecord: Success!");
         }
     }
 }
