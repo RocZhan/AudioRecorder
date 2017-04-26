@@ -2,7 +2,6 @@ package com.hust.zp.audiorecorder;
 
 import android.content.Context;
 import android.os.Environment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileFilter;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by zhanpeng on 2017/4/26.
@@ -25,6 +22,7 @@ public class MyAdapter extends BaseAdapter {
     private int resourceId;
     private Context context;
 
+    //MyAdapter的构造函数，把MainActivity的活动和listview的子布局xml文件的Id传过来
     public MyAdapter(Context context,int textViewResourceId) {
         super();
         query();
@@ -32,11 +30,12 @@ public class MyAdapter extends BaseAdapter {
         resourceId = textViewResourceId;
     }
 
+    //构造一个队列读取根目录下的现存的录音文件
     public void query() {
         String mFileName = Environment.getExternalStorageDirectory()
                 .getAbsolutePath();
-        Log.d(TAG, "query: " + mFileName);
         File f = new File(mFileName);
+        //通过FileFilter筛选出以“Record ”开头的文件
         File [] found = f.listFiles(new FileFilter() {
 
             @Override
@@ -52,7 +51,6 @@ public class MyAdapter extends BaseAdapter {
         for (int i = 0; i < found.length; i++) {
             file[i] = found[found.length-i-1];
         }
-        Log.d(TAG, "file: " + found.length);
     }
 
 
@@ -76,7 +74,7 @@ public class MyAdapter extends BaseAdapter {
 
     @Override
     public View getView(int arg0, View arg1, ViewGroup arg2) {
-        View v = LayoutInflater.from(context).inflate(resourceId, null);
+        View v = LayoutInflater.from(context).inflate(resourceId, null);//获得listview的子布局layout(item.xml)
         TextView txtText = (TextView) v.findViewById(R.id.textView1);
         TextView txtSize = (TextView) v.findViewById(R.id.textView2);
 
