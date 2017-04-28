@@ -21,10 +21,16 @@
         android:text="停止录音" />
 
     <Button
+        android:id="@+id/saveRecord"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="保存录音"/>
+
+    <Button
         android:id="@+id/playRecord"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="播放录音" />
+        android:text="停止播放" />
 
     <ListView
         android:id="@+id/listView"

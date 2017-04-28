@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button startRecord;
     private Button stopRecord;
     private Button playRecord;
+    private Button saveRecord;
     private ListView listView;
     private AudioRecorder audioRecorder;
     private AudioPlayer audioPlayer;
@@ -34,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startRecord.setOnClickListener(this);
         stopRecord = (Button)findViewById(R.id.stopRecord);
         stopRecord.setOnClickListener(this);
+        saveRecord = (Button)findViewById(R.id.saveRecord);
+        saveRecord.setOnClickListener(this);
         playRecord = (Button)findViewById(R.id.playRecord);
         playRecord.setOnClickListener(this);
 
@@ -93,7 +96,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //点击停止录音按钮
             case R.id.stopRecord:
                 audioRecorder.stopRecord();
+
+                break;
+            case R.id.saveRecord:
+                audioRecorder.writeDataToFile();
+                audioRecorder.closeRecord();
                 refreshViewByRecordingState();
+                break;
+            case R.id.playRecord:
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        audioPlayer = new AudioPlayer();
+                        audioPlayer.startPlay();
+                    }
+                }).start();
+
                 break;
             default:
                 break;
